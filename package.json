@@ -21,7 +21,7 @@
     "lint": "eslint ./",
     "lint:fix": "eslint --fix ./",
     "postbuild": "ts-node ./scripts/postbuild.ts",
-    "postinstall": "npm run codegen",
+    "postinstall": "node ./scripts/conditional-postinstall.js",
     "test": "vitest run"
   },
   "devDependencies": {
