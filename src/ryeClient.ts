@@ -78,77 +78,94 @@ import type {
 import { warnIfAuthHeaderInvalid } from './utils';
 
 interface IRyeClient {
-  getCart(getCartParams: GetCartParams): Promise<GetCartQuery['getCart'] | undefined>;
+  getCart(
+    getCartParams: GetCartParams,
+  ): Promise<OperationResultSource<OperationResult<GetCartQuery, GetCartParams>>>;
 
   createCart(
     createCartParams: CreateCartParams,
-  ): Promise<CreateCartMutation['createCart'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<CreateCartMutation, CreateCartParams>>>;
 
   addCartItems(
     addCartItemsParams: AddCartItemsParams,
-  ): Promise<AddCartItemsMutation['addCartItems'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<AddCartItemsMutation, AddCartItemsParams>>>;
 
   deleteCartItems(
     deleteCartItemsParams: DeleteCartItemsParams,
-  ): Promise<DeleteCartItemsMutation['deleteCartItems'] | undefined>;
+  ): Promise<
+    OperationResultSource<OperationResult<DeleteCartItemsMutation, DeleteCartItemsParams>>
+  >;
 
   updateCartItems(
     updateCartItemsParams: UpdateCartItemsParams,
-  ): Promise<UpdateCartItemsMutation['updateCartItems'] | undefined>;
+  ): Promise<
+    OperationResultSource<OperationResult<UpdateCartItemsMutation, UpdateCartItemsParams>>
+  >;
 
   removeCart(
     removeCartItemsParams: RemoveCartParams,
-  ): Promise<RemoveCartMutation['removeCart'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<RemoveCartMutation, RemoveCartParams>>>;
 
   updateCartBuyerIdentity(
     updateCartBuyerIdentityParams: UpdateCartBuyerIdentityParams,
-  ): Promise<UpdateCartBuyerIdentityMutation['updateCartBuyerIdentity'] | undefined>;
+  ): Promise<
+    OperationResultSource<
+      OperationResult<UpdateCartBuyerIdentityMutation, UpdateCartBuyerIdentityParams>
+    >
+  >;
 
   updateCartSelectedShippingOptions(
     updateCartSelectedShippingOptionsParams: UpdateCartSelectedShippingOptionsParams,
   ): Promise<
-    UpdateCartSelectedShippingOptionsMutation['updateCartSelectedShippingOptions'] | undefined
+    OperationResultSource<
+      OperationResult<
+        UpdateCartSelectedShippingOptionsMutation,
+        UpdateCartSelectedShippingOptionsParams
+      >
+    >
   >;
 
   submitCart(
     submitCartParams: SubmitCartParams,
-  ): Promise<SubmitCartMutation['submitCart'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<SubmitCartMutation, SubmitCartParams>>>;
 
-  orderById(orderByIdParams: OrderByIdParams): Promise<OrderByIdQuery['orderByID'] | undefined>;
+  orderById(
+    orderByIdParams: OrderByIdParams,
+  ): Promise<OperationResultSource<OperationResult<OrderByIdQuery, OrderByIdParams>>>;
 
   checkoutByCartId(
     checkoutByCartIdParams: CheckoutByCartIdParams,
-  ): Promise<CheckoutByCartIdQuery['checkoutByCartID'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<CheckoutByCartIdQuery, CheckoutByCartIdParams>>>;
 
-  getEnvironmentToken(): Promise<EnvironmentTokenQuery['environmentToken'] | undefined>;
+  getEnvironmentToken(): Promise<OperationResultSource<OperationResult<EnvironmentTokenQuery>>>;
 
   getShopifyAppInformation(
     shopifyAppParams: ShopifyAppParams,
-  ): Promise<ShopifyAppQuery['shopifyApp'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<ShopifyAppQuery>>>;
 
   requestProductByUrl(
     requestProductByUrlParams: RequestProductByUrlParams,
-  ): Promise<RequestProductByUrlMutation['requestProductByURL'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<RequestProductByUrlMutation>>>;
 
   requestStoreByUrl(
     requestStoreByUrlParams: RequestStoreByUrlParams,
-  ): Promise<RequestStoreByUrlMutation['requestStoreByURL'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<RequestStoreByUrlMutation>>>;
 
   getProductById(
     productByIdParams: ProductByIdParams,
-  ): Promise<ProductByIdQuery['productByID'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<ProductByIdQuery>>>;
 
   getProductsByDomainV2(
     productsByDomainV2Params: ProductsByDomainV2Params,
-  ): Promise<ProductsByDomainV2Query['productsByDomainV2'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<ProductsByDomainV2Query>>>;
 
   getIntegratedShopifyStore(
     integratedShopifyStoreParams: IntegratedShopifyStoreParams,
-  ): Promise<IntegratedShopifyStoreQuery['integratedShopifyStore'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<IntegratedShopifyStoreQuery>>>;
 
   getShopifyCollection(
     shopifyCollectionParams: ShopifyCollectionParams,
-  ): Promise<ShopifyCollectionQuery['shopifyCollection'] | undefined>;
+  ): Promise<OperationResultSource<OperationResult<ShopifyCollectionQuery>>>;
 }
 
 interface RyeClientOptions {
@@ -322,9 +339,10 @@ class RyeClient implements IRyeClient {
    * @param getCartParams - The params for the getCart query.
    * @returns A promise that resolves to the cart data or undefined.
    */
-  getCart = async (getCartParams: GetCartParams): Promise<GetCartQuery['getCart'] | undefined> => {
-    const response = await this.apiRequest(GET_CART_QUERY, getCartParams);
-    return response?.data?.getCart;
+  getCart = async (
+    getCartParams: GetCartParams,
+  ): Promise<OperationResultSource<OperationResult<GetCartQuery, GetCartParams>>> => {
+    return await this.apiRequest(GET_CART_QUERY, getCartParams);
   };
 
   /**
@@ -334,13 +352,8 @@ class RyeClient implements IRyeClient {
    */
   createCart = async (
     createCartParams: CreateCartParams,
-  ): Promise<CreateCartMutation['createCart'] | undefined> => {
-    const response = await this.apiRequest(
-      CREATE_CART_MUTATION,
-      createCartParams,
-      OPERATION.MUTATION,
-    );
-    return response.data?.createCart;
+  ): Promise<OperationResultSource<OperationResult<CreateCartMutation, CreateCartParams>>> => {
+    return await this.apiRequest(CREATE_CART_MUTATION, createCartParams, OPERATION.MUTATION);
   };
 
   /**
@@ -350,13 +363,8 @@ class RyeClient implements IRyeClient {
    */
   addCartItems = async (
     addCartItemsParams: AddCartItemsParams,
-  ): Promise<AddCartItemsMutation['addCartItems'] | undefined> => {
-    const response = await this.apiRequest(
-      ADD_CART_ITEMS_MUTATION,
-      addCartItemsParams,
-      OPERATION.MUTATION,
-    );
-    return response.data?.addCartItems;
+  ): Promise<OperationResultSource<OperationResult<AddCartItemsMutation, AddCartItemsParams>>> => {
+    return await this.apiRequest(ADD_CART_ITEMS_MUTATION, addCartItemsParams, OPERATION.MUTATION);
   };
 
   /**
@@ -366,13 +374,14 @@ class RyeClient implements IRyeClient {
    */
   deleteCartItems = async (
     deleteCartItemsParams: DeleteCartItemsParams,
-  ): Promise<DeleteCartItemsMutation['deleteCartItems'] | undefined> => {
-    const response = await this.apiRequest(
+  ): Promise<
+    OperationResultSource<OperationResult<DeleteCartItemsMutation, DeleteCartItemsParams>>
+  > => {
+    return await this.apiRequest(
       DELETE_CART_ITEMS_MUTATION,
       deleteCartItemsParams,
       OPERATION.MUTATION,
     );
-    return response.data?.deleteCartItems;
   };
 
   /**
@@ -382,13 +391,14 @@ class RyeClient implements IRyeClient {
    */
   updateCartItems = async (
     updateCartItemsParams: UpdateCartItemsParams,
-  ): Promise<UpdateCartItemsMutation['updateCartItems'] | undefined> => {
-    const response = await this.apiRequest(
+  ): Promise<
+    OperationResultSource<OperationResult<UpdateCartItemsMutation, UpdateCartItemsParams>>
+  > => {
+    return await this.apiRequest(
       UPDATE_CART_ITEMS_MUTATION,
       updateCartItemsParams,
       OPERATION.MUTATION,
     );
-    return response.data?.updateCartItems;
   };
 
   /**
@@ -398,13 +408,8 @@ class RyeClient implements IRyeClient {
    */
   removeCart = async (
     removeCartItemsParams: RemoveCartParams,
-  ): Promise<RemoveCartMutation['removeCart'] | undefined> => {
-    const response = await this.apiRequest(
-      REMOVE_CART_MUTATION,
-      removeCartItemsParams,
-      OPERATION.MUTATION,
-    );
-    return response.data?.removeCart;
+  ): Promise<OperationResultSource<OperationResult<RemoveCartMutation, RemoveCartParams>>> => {
+    return await this.apiRequest(REMOVE_CART_MUTATION, removeCartItemsParams, OPERATION.MUTATION);
   };
 
   /**
@@ -414,13 +419,16 @@ class RyeClient implements IRyeClient {
    */
   updateCartBuyerIdentity = async (
     updateCartBuyerIdentityParams: UpdateCartBuyerIdentityParams,
-  ): Promise<UpdateCartBuyerIdentityMutation['updateCartBuyerIdentity'] | undefined> => {
-    const response = await this.apiRequest(
+  ): Promise<
+    OperationResultSource<
+      OperationResult<UpdateCartBuyerIdentityMutation, UpdateCartBuyerIdentityParams>
+    >
+  > => {
+    return await this.apiRequest(
       UPDATE_CART_BUYER_IDENTITY_MUTATION,
       updateCartBuyerIdentityParams,
       OPERATION.MUTATION,
     );
-    return response.data?.updateCartBuyerIdentity;
   };
 
   /**
@@ -431,14 +439,18 @@ class RyeClient implements IRyeClient {
   updateCartSelectedShippingOptions = async (
     updateCartSelectedShippingOptionsParams: UpdateCartSelectedShippingOptionsParams,
   ): Promise<
-    UpdateCartSelectedShippingOptionsMutation['updateCartSelectedShippingOptions'] | undefined
+    OperationResultSource<
+      OperationResult<
+        UpdateCartSelectedShippingOptionsMutation,
+        UpdateCartSelectedShippingOptionsParams
+      >
+    >
   > => {
-    const response = await this.apiRequest(
+    return await this.apiRequest(
       UPDATE_CART_SELECTED_SHIPPING_OPTIONS_MUTATION,
       updateCartSelectedShippingOptionsParams,
       OPERATION.MUTATION,
     );
-    return response.data?.updateCartSelectedShippingOptions;
   };
 
   /**
@@ -448,13 +460,8 @@ class RyeClient implements IRyeClient {
    */
   submitCart = async (
     submitCartParams: SubmitCartParams,
-  ): Promise<SubmitCartMutation['submitCart'] | undefined> => {
-    const response = await this.apiRequest(
-      SUBMIT_CART_MUTATION,
-      submitCartParams,
-      OPERATION.MUTATION,
-    );
-    return response.data?.submitCart;
+  ): Promise<OperationResultSource<OperationResult<SubmitCartMutation, SubmitCartParams>>> => {
+    return await this.apiRequest(SUBMIT_CART_MUTATION, submitCartParams, OPERATION.MUTATION);
   };
 
   /**
@@ -464,9 +471,8 @@ class RyeClient implements IRyeClient {
    */
   orderById = async (
     orderByIdParams: OrderByIdParams,
-  ): Promise<OrderByIdQuery['orderByID'] | undefined> => {
-    const response = await this.apiRequest(ORDER_BY_ID_QUERY, orderByIdParams);
-    return response?.data?.orderByID;
+  ): Promise<OperationResultSource<OperationResult<OrderByIdQuery, OrderByIdParams>>> => {
+    return await this.apiRequest(ORDER_BY_ID_QUERY, orderByIdParams);
   };
 
   /**
@@ -476,9 +482,10 @@ class RyeClient implements IRyeClient {
    */
   checkoutByCartId = async (
     checkoutByCartIdParams: CheckoutByCartIdParams,
-  ): Promise<CheckoutByCartIdQuery['checkoutByCartID'] | undefined> => {
-    const response = await this.apiRequest(CHECKOUT_BY_CART_ID_QUERY, checkoutByCartIdParams);
-    return response?.data?.checkoutByCartID;
+  ): Promise<
+    OperationResultSource<OperationResult<CheckoutByCartIdQuery, CheckoutByCartIdParams>>
+  > => {
+    return await this.apiRequest(CHECKOUT_BY_CART_ID_QUERY, checkoutByCartIdParams);
   };
 
   /**
@@ -486,11 +493,9 @@ class RyeClient implements IRyeClient {
    * @returns A promise that resolves to the env token or undefined.
    */
   getEnvironmentToken = async (): Promise<
-    EnvironmentTokenQuery['environmentToken'] | undefined
+    OperationResultSource<OperationResult<EnvironmentTokenQuery>>
   > => {
-    const response = await this.apiRequest(ENVIRONMENT_TOKEN_QUERY, {});
-
-    return response.data?.environmentToken;
+    return await this.apiRequest(ENVIRONMENT_TOKEN_QUERY, {});
   };
 
   /**
@@ -500,10 +505,8 @@ class RyeClient implements IRyeClient {
    */
   getShopifyAppInformation = async (
     shopifyAppParams: ShopifyAppParams,
-  ): Promise<ShopifyAppQuery['shopifyApp'] | undefined> => {
-    const response = await this.apiRequest(SHOPIFY_APP_QUERY, shopifyAppParams);
-
-    return response.data?.shopifyApp;
+  ): Promise<OperationResultSource<OperationResult<ShopifyAppQuery>>> => {
+    return await this.apiRequest(SHOPIFY_APP_QUERY, shopifyAppParams);
   };
 
   /**
@@ -513,14 +516,12 @@ class RyeClient implements IRyeClient {
    */
   requestProductByUrl = async (
     requestProductByUrlParams: RequestProductByUrlParams,
-  ): Promise<RequestProductByUrlMutation['requestProductByURL'] | undefined> => {
-    const response = await this.apiRequest(
+  ): Promise<OperationResultSource<OperationResult<RequestProductByUrlMutation>>> => {
+    return await this.apiRequest(
       REQUEST_PRODUCT_BY_URL_MUTATION,
       requestProductByUrlParams,
       OPERATION.MUTATION,
     );
-
-    return response.data?.requestProductByURL;
   };
 
   /**
@@ -530,14 +531,12 @@ class RyeClient implements IRyeClient {
    */
   requestStoreByUrl = async (
     requestStoreByUrlParams: RequestStoreByUrlParams,
-  ): Promise<RequestStoreByUrlMutation['requestStoreByURL'] | undefined> => {
-    const response = await this.apiRequest(
+  ): Promise<OperationResultSource<OperationResult<RequestStoreByUrlMutation>>> => {
+    return await this.apiRequest(
       REQUEST_STORE_BY_URL_MUTATION,
       requestStoreByUrlParams,
       OPERATION.MUTATION,
     );
-
-    return response.data?.requestStoreByURL;
   };
 
   /**
@@ -547,10 +546,8 @@ class RyeClient implements IRyeClient {
    */
   getProductById = async (
     productByIdParams: ProductByIdParams,
-  ): Promise<ProductByIdQuery['productByID'] | undefined> => {
-    const response = await this.apiRequest(PRODUCT_BY_ID_QUERY, productByIdParams);
-
-    return response.data?.productByID;
+  ): Promise<OperationResultSource<OperationResult<ProductByIdQuery>>> => {
+    return await this.apiRequest(PRODUCT_BY_ID_QUERY, productByIdParams);
   };
 
   /**
@@ -560,10 +557,8 @@ class RyeClient implements IRyeClient {
    */
   getProductsByDomainV2 = async (
     productsByDomainV2Params: ProductsByDomainV2Params,
-  ): Promise<ProductsByDomainV2Query['productsByDomainV2'] | undefined> => {
-    const response = await this.apiRequest(PRODUCTS_BY_DOMAIN_V2_QUERY, productsByDomainV2Params);
-
-    return response.data?.productsByDomainV2;
+  ): Promise<OperationResultSource<OperationResult<ProductsByDomainV2Query>>> => {
+    return await this.apiRequest(PRODUCTS_BY_DOMAIN_V2_QUERY, productsByDomainV2Params);
   };
 
   /**
@@ -573,13 +568,8 @@ class RyeClient implements IRyeClient {
    */
   getIntegratedShopifyStore = async (
     integratedShopifyStoreParams: IntegratedShopifyStoreParams,
-  ): Promise<IntegratedShopifyStoreQuery['integratedShopifyStore'] | undefined> => {
-    const response = await this.apiRequest(
-      INTEGRATED_SHOPIFY_STORE_QUERY,
-      integratedShopifyStoreParams,
-    );
-
-    return response.data?.integratedShopifyStore;
+  ): Promise<OperationResultSource<OperationResult<IntegratedShopifyStoreQuery>>> => {
+    return await this.apiRequest(INTEGRATED_SHOPIFY_STORE_QUERY, integratedShopifyStoreParams);
   };
 
   /**
@@ -589,10 +579,8 @@ class RyeClient implements IRyeClient {
    */
   getShopifyCollection = async (
     shopifyCollectionParams: ShopifyCollectionParams,
-  ): Promise<ShopifyCollectionQuery['shopifyCollection'] | undefined> => {
-    const response = await this.apiRequest(SHOPIFY_COLLECTION_QUERY, shopifyCollectionParams);
-
-    return response.data?.shopifyCollection;
+  ): Promise<OperationResultSource<OperationResult<ShopifyCollectionQuery>>> => {
+    return await this.apiRequest(SHOPIFY_COLLECTION_QUERY, shopifyCollectionParams);
   };
 }
 
