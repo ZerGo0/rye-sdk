@@ -21,6 +21,7 @@
     "lint": "eslint ./",
     "lint:fix": "eslint --fix ./",
     "postbuild": "ts-node ./scripts/postbuild.ts",
+    "postinstall": "npm run codegen",
     "test": "vitest run"
   },
   "devDependencies": {
