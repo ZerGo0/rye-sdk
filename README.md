@@ -7,11 +7,11 @@ The Rye SDK provides convenient access to the Rye API via the Rye client from wh
 Install the package with:
 
 ```sh
-npm install @rye-api/rye-sdk
+npm install @zergo0/rye-sdk
 # or
-yarn add @rye-api/rye-sdk
+yarn add @zergo0/rye-sdk
 # or
-pnpm add @rye-api/rye-sdk
+pnpm add @zergo0/rye-sdk
 ```
 
 ## Usage
