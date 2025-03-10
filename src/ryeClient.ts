@@ -175,11 +175,18 @@ interface RyeClientOptions {
   shopperIp: string;
 }
 
+const MIN_REQUEST_SPACING = 100; // ms
+const DEFAULT_WAIT_TIME = 1 * 1000;
+const MAX_WAIT_TIME = 30 * 1000;
+const MAX_RETRIES = 10;
+
 class RyeClient implements IRyeClient {
   private authHeader: string | null;
   private shopperIp: string | null;
   private environment: ENVIRONMENT;
   private ryeClient: Client;
+
+  private lastRequestTime = 0;
 
   /**
    * @deprecated This signature is deprecated. Please use the alternate constructor signature that takes a {@link RyeClientOptions} bag.
@@ -205,6 +212,115 @@ class RyeClient implements IRyeClient {
     this.ryeClient = this.initializeClient();
   }
 
+  private retryableFetch(input: RequestInfo | URL, init: RequestInit | undefined) {
+    let retryCount = 0;
+
+    const makeRequest = async (): Promise<Response> => {
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+      if (timeSinceLastRequest < MIN_REQUEST_SPACING) {
+        const waitTime = MIN_REQUEST_SPACING - timeSinceLastRequest;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+      this.lastRequestTime = Date.now();
+
+      const response = await fetch(input, init);
+
+      if (response.ok) {
+        return response;
+      }
+
+      const rateLimitRemaining = parseInt(response.headers.get('ratelimit-remaining') ?? '100', 10);
+      const rateLimitReset = parseInt(response.headers.get('ratelimit-reset') ?? '0', 10) * 1000; // Convert to milliseconds
+
+      const exponentialWaitTime = Math.min(
+        DEFAULT_WAIT_TIME * Math.pow(2, retryCount),
+        MAX_WAIT_TIME,
+      );
+
+      if (rateLimitRemaining === 0) {
+        if (retryCount >= MAX_RETRIES) {
+          console.error(
+            `[retryableFetch] Max retries (${MAX_RETRIES}) reached for rate limit. Failing request.`,
+            'input:',
+            JSON.stringify(input),
+            'headers:',
+            Object.fromEntries(response.headers.entries()),
+          );
+          return response;
+        }
+
+        const waitTime =
+          rateLimitReset && rateLimitReset > Date.now()
+            ? rateLimitReset - Date.now()
+            : exponentialWaitTime;
+        console.warn(
+          `[retryableFetch] Header rate limit hit. Retry ${
+            retryCount + 1
+          }/${MAX_RETRIES}. Waiting ${waitTime}ms before retrying...`,
+          'input:',
+          JSON.stringify(input),
+          'headers:',
+          Object.fromEntries(response.headers.entries()),
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        retryCount++;
+        // Retry the request after waiting
+        return makeRequest();
+      }
+
+      // Clone the response so we can read the body multiple times
+      const clonedResponse = response.clone();
+      try {
+        const data = await clonedResponse.json();
+
+        // Check for GraphQL rate limit errors
+        const hitRateLimit = data.errors?.some(
+          (error: { message: string; extensions: { code: string } }) =>
+            error.message?.includes('rate limit') ||
+            error.message?.includes('reached its rate limit') ||
+            error.extensions?.code === 'TOO_MANY_REQUESTS',
+        );
+
+        if (hitRateLimit) {
+          if (retryCount >= MAX_RETRIES) {
+            console.error(
+              `[retryableFetch] Max retries (${MAX_RETRIES}) reached for GraphQL rate limit. Failing request.`,
+              'input:',
+              JSON.stringify(input),
+              'headers:',
+              Object.fromEntries(response.headers.entries()),
+              'errors:',
+              data.errors,
+            );
+            return response;
+          }
+
+          console.warn(
+            `[retryableFetch] GraphQL rate limit hit. Retry ${
+              retryCount + 1
+            }/${MAX_RETRIES}. Waiting ${exponentialWaitTime}ms before retrying...`,
+            'input:',
+            JSON.stringify(input),
+            'headers:',
+            Object.fromEntries(response.headers.entries()),
+            'errors:',
+            data.errors,
+          );
+          await new Promise((resolve) => setTimeout(resolve, exponentialWaitTime));
+          retryCount++;
+          return makeRequest();
+        }
+      } catch (e) {
+        // If we can't parse the response as JSON, just return the original response
+      }
+
+      return response;
+    };
+
+    return makeRequest();
+  }
+
   /**
    * The function initializes a client with the specified authentication header and shopper IP.
    * @returns The function `initializeClient` returns a new instance of the `Client` class.
@@ -220,13 +336,6 @@ class RyeClient implements IRyeClient {
     }
 
     warnIfAuthHeaderInvalid(this.authHeader);
-
-    // Track the last request time globally
-    let lastRequestTime = 0;
-    const MIN_REQUEST_SPACING = 100; // ms
-    const DEFAULT_WAIT_TIME = 1000; // 1 second
-    const MAX_WAIT_TIME = 30 * 1000; // 30 seconds
-    const MAX_RETRIES = 10;
 
     const retryOptions: RetryExchangeOptions = {
       initialDelayMs: DEFAULT_WAIT_TIME,
@@ -257,37 +366,6 @@ class RyeClient implements IRyeClient {
       },
     };
 
-    // Custom fetch implementation to handle request spacing and header-based rate limiting
-    async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-      // Ensure minimum spacing between requests
-      const now = Date.now();
-      const timeSinceLastRequest = now - lastRequestTime;
-      if (timeSinceLastRequest < MIN_REQUEST_SPACING) {
-        const waitTime = MIN_REQUEST_SPACING - timeSinceLastRequest;
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-      }
-      lastRequestTime = Date.now();
-
-      const response = await fetch(input, init);
-
-      // Check for header-based rate limiting
-      const rateLimitRemaining = parseInt(response.headers.get('ratelimit-remaining') ?? '100', 10);
-      const rateLimitReset = parseInt(response.headers.get('ratelimit-reset') ?? '0', 10) * 1000; // Convert to milliseconds
-
-      if (rateLimitRemaining === 0 && rateLimitReset > Date.now()) {
-        const waitTime = rateLimitReset - Date.now();
-        console.warn(
-          `[RyeClient] Header rate limit hit. Waiting ${waitTime}ms before continuing...`,
-          'input:',
-          JSON.stringify(input),
-        );
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-        // The retry exchange will handle the actual retry
-      }
-
-      return response;
-    }
-
     return new Client({
       url: GRAPHQL_ENDPOINTS[this.environment],
       exchanges: [retryExchange(retryOptions), fetchExchange],
@@ -301,7 +379,7 @@ class RyeClient implements IRyeClient {
           },
         };
       },
-      fetch: customFetch,
+      fetch: this.retryableFetch,
     });
   }
 
