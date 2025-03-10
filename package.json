@@ -23,7 +23,8 @@
     "lint:fix": "eslint --fix ./",
     "postbuild": "ts-node ./scripts/postbuild.ts",
     "postinstall": "node -e \"try { require('./scripts/conditional-postinstall.js') } catch(e) { console.log('Skipping optional postinstall script') }\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "publish": "npm run build && npm version patch && npm publish"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^4.0.1",
