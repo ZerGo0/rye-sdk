@@ -22,6 +22,7 @@ const fragmentTypes = new Set();
 function generateFragment(typeName, fields) {
   return `export const ${typeName}Fragment = graphql(\`
   fragment ${typeName}Fragment on ${typeName} {
+    __typename
 ${fields.map((field) => `    ${field}`).join('\n')}
   }
 \`);
@@ -46,13 +47,8 @@ function generateUnionFragment(typeName, possibleTypes) {
 }
 
 // Function to get fields for a type
-function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
+function getTypeFields(type, schema) {
   if (!type.getFields) {
-    return [];
-  }
-
-  // Prevent infinite recursion
-  if (depth > maxDepth) {
     return [];
   }
 
@@ -90,7 +86,7 @@ function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
         }
 
         // If we've already processed this type or we're at max depth, just use __typename
-        if (processedTypes.has(namedType.name) || depth === maxDepth) {
+        if (processedTypes.has(namedType.name)) {
           return `${fieldName} {
       __typename
     }`;
@@ -100,7 +96,7 @@ function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
         processedTypes.add(namedType.name);
 
         // Get nested fields
-        const nestedFields = getTypeFields(namedType, schema, depth + 1, maxDepth);
+        const nestedFields = getTypeFields(namedType, schema);
 
         // Remove this type from processed set after we're done with it
         processedTypes.delete(namedType.name);
@@ -200,7 +196,7 @@ async function main() {
       }
 
       // Get fields for the type
-      const fields = getTypeFields(type, schema, 0, 2);
+      const fields = getTypeFields(type, schema);
 
       // Skip if no fields (all had required arguments)
       if (fields.length === 0) {
@@ -218,7 +214,7 @@ async function main() {
       processedTypes.clear();
 
       // Get fields for the type
-      const fields = getTypeFields(type, schema, 0, 2);
+      const fields = getTypeFields(type, schema);
 
       // Skip if no fields (all had required arguments)
       if (fields.length === 0) {
