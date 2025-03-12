@@ -261,7 +261,25 @@ const result = await ryeClient.getProductsByDomainV2({
 });
 ```
 
-3. `getCart`
+3. `productsByIds`
+
+```ts
+const result = await ryeClient.getProductsByIds({
+  input: [
+    {
+      id: 'B00A2KD8NY',
+      marketplace: Marketplace.Amazon,
+    },
+    {
+      id: 'B0BB6KNCKT',
+      marketplace: Marketplace.Amazon,
+    },
+  ],
+  includeAdditionalProductDetails: false, // Set to true to include additional product details
+});
+```
+
+4. `getCart`
 
 ```ts
 const result = await ryeClient.getCart({
@@ -273,7 +291,7 @@ const result = await ryeClient.getCart({
 });
 ```
 
-4. `orderByID`
+5. `orderByID`
 
 ```ts
 const result = await ryeClient.orderById({
@@ -281,7 +299,7 @@ const result = await ryeClient.orderById({
 });
 ```
 
-5. `checkoutByCartID`
+6. `checkoutByCartID`
 
 ```ts
 const result = await ryeClient.checkoutByCartId({
@@ -293,7 +311,7 @@ const result = await ryeClient.checkoutByCartId({
 });
 ```
 
-6. `shopifyApp`
+7. `shopifyApp`
 
 ```ts
 const result = await ryeClient.getShopifyAppInformation({
@@ -301,7 +319,7 @@ const result = await ryeClient.getShopifyAppInformation({
 });
 ```
 
-7. `environmentToken`
+8. `environmentToken`
 
 ```ts
 const result = await ryeClient.getEnvironmentToken();

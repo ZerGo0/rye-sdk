@@ -25,6 +25,7 @@ import { INTEGRATED_SHOPIFY_STORE_QUERY } from './gql/integratedShopifyStore';
 import { ORDER_BY_ID_QUERY } from './gql/orderById';
 import { PRODUCT_BY_ID_QUERY } from './gql/productById';
 import { PRODUCTS_BY_DOMAIN_V2_QUERY } from './gql/productsByDomainV2';
+import { PRODUCTS_BY_IDS_QUERY } from './gql/productsByIds';
 import { REMOVE_CART_MUTATION } from './gql/removeCart';
 import { REQUEST_PRODUCT_BY_URL_MUTATION } from './gql/requestProductByURL';
 import { REQUEST_STORE_BY_URL_MUTATION } from './gql/requestStoreByURL';
@@ -45,6 +46,7 @@ import {
   OrderByIdQuery,
   ProductByIdQuery,
   ProductsByDomainV2Query,
+  ProductsByIdsQuery,
   RemoveCartMutation,
   RequestProductByUrlMutation,
   RequestStoreByUrlMutation,
@@ -65,6 +67,7 @@ import type {
   OrderByIdParams,
   ProductByIdParams,
   ProductsByDomainV2Params,
+  ProductsByIdsParams,
   RemoveCartParams,
   RequestProductByUrlParams,
   RequestStoreByUrlParams,
@@ -166,6 +169,10 @@ interface IRyeClient {
   getShopifyCollection(
     shopifyCollectionParams: ShopifyCollectionParams,
   ): Promise<OperationResultSource<OperationResult<ShopifyCollectionQuery>>>;
+
+  getProductsByIds(
+    productsByIdsParams: ProductsByIdsParams,
+  ): Promise<OperationResultSource<OperationResult<ProductsByIdsQuery>>>;
 }
 
 interface RyeClientOptions {
@@ -588,6 +595,12 @@ class RyeClient implements IRyeClient {
     shopifyCollectionParams: ShopifyCollectionParams,
   ): Promise<OperationResultSource<OperationResult<ShopifyCollectionQuery>>> => {
     return await this.apiRequest(SHOPIFY_COLLECTION_QUERY, shopifyCollectionParams);
+  };
+
+  getProductsByIds = async (
+    productsByIdsParams: ProductsByIdsParams,
+  ): Promise<OperationResultSource<OperationResult<ProductsByIdsQuery>>> => {
+    return await this.apiRequest(PRODUCTS_BY_IDS_QUERY, productsByIdsParams);
   };
 }
 

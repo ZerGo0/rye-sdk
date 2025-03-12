@@ -6,6 +6,7 @@ import {
   CartItemsDeleteInput,
   CartItemsUpdateInput,
   CartSubmitInput,
+  Marketplace,
   OffsetPaginationInput,
   ProductByIdInput,
   ProductsByDomainInput,
@@ -132,4 +133,12 @@ export type ShopifyCollectionParams = {
   productsLast?: number;
   productsAfter?: string;
   productsBefore?: string;
+};
+
+export type ProductsByIdsParams = {
+  input: Array<{
+    id: string;
+    marketplace: Marketplace;
+  }>;
+  includeAdditionalProductDetails: boolean;
 };
