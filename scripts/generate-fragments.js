@@ -28,6 +28,23 @@ ${fields.map((field) => `    ${field}`).join('\n')}
 `;
 }
 
+// Function to generate a fragment for a union type
+function generateUnionFragment(typeName, possibleTypes) {
+  return `export const ${typeName}Fragment = graphql(\`
+  fragment ${typeName}Fragment on ${typeName} {
+    __typename
+    ${possibleTypes
+      .map(
+        (type) => `... on ${type} {
+      ...${type}Fragment
+    }`,
+      )
+      .join('\n    ')}
+  }
+\`);
+`;
+}
+
 // Function to get fields for a type
 function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
   if (!type.getFields) {
@@ -64,7 +81,7 @@ function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
       }
 
       // For object, interface, or union types
-      if (isObjectType(namedType) || isInterfaceType(namedType)) {
+      if (isObjectType(namedType) || isInterfaceType(namedType) || isUnionType(namedType)) {
         // If this type has a fragment, reference it
         if (fragmentTypes.has(namedType.name)) {
           return `${fieldName} {
@@ -99,13 +116,6 @@ function getTypeFields(type, schema, depth = 0, maxDepth = 99) {
         .filter((f) => f !== null)
         .map((f) => `  ${f}`)
         .join('\n      ')}
-    }`;
-      }
-
-      // For union types, just use __typename
-      if (isUnionType(namedType)) {
-        return `${fieldName} {
-      __typename
     }`;
       }
 
@@ -181,9 +191,10 @@ async function main() {
       const type = typeMap[typeName];
       processedTypes.clear();
 
-      // For union types, just use __typename
+      // For union types, use the special union fragment generator
       if (isUnionType(type)) {
-        fragmentsContent += generateFragment(typeName, ['__typename']);
+        const possibleTypes = type.getTypes ? type.getTypes().map((t) => t.name) : [];
+        fragmentsContent += generateUnionFragment(typeName, possibleTypes);
         generatedCount++;
         continue;
       }

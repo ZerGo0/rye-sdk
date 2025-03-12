@@ -140,13 +140,19 @@ export const CancelOrderResponseFragment = graphql(`
       ...CancelOrderErrorFragment
     }
     result {
-      __typename
+      ...CancelOrderResultFragment
     }
   }
 `);
 export const CancelOrderResultFragment = graphql(`
   fragment CancelOrderResultFragment on CancelOrderResult {
     __typename
+    ... on CancelShopifyOrderResult {
+      ...CancelShopifyOrderResultFragment
+    }
+    ... on CancelAmazonOrderResult {
+      ...CancelAmazonOrderResultFragment
+    }
   }
 `);
 export const CancelShopifyOrderResultFragment = graphql(`
@@ -159,18 +165,27 @@ export const CartErrorFragment = graphql(`
     message
     code
     details {
-      __typename
+      ...CartErrorDetailsFragment
     }
   }
 `);
 export const CartErrorDetailsFragment = graphql(`
   fragment CartErrorDetailsFragment on CartErrorDetails {
     __typename
+    ... on AddressValidationErrorDetails {
+      ...AddressValidationErrorDetailsFragment
+    }
   }
 `);
 export const CartLineFragment = graphql(`
   fragment CartLineFragment on CartLine {
     __typename
+    ... on ShopifyCartLine {
+      ...ShopifyCartLineFragment
+    }
+    ... on AmazonCartLine {
+      ...AmazonCartLineFragment
+    }
   }
 `);
 export const CartResponseFragment = graphql(`
@@ -255,6 +270,12 @@ export const ExperimentalAffiliateCommissionPendingFragment = graphql(`
 export const ExperimentalAffiliateCommissionRateFragment = graphql(`
   fragment ExperimentalAffiliateCommissionRateFragment on ExperimentalAffiliateCommissionRate {
     __typename
+    ... on ExperimentalAffiliateCommissionRatePercentage {
+      ...ExperimentalAffiliateCommissionRatePercentageFragment
+    }
+    ... on ExperimentalAffiliateCommissionRateFixed {
+      ...ExperimentalAffiliateCommissionRateFixedFragment
+    }
   }
 `);
 export const ExperimentalAffiliateCommissionRateFixedFragment = graphql(`
@@ -336,11 +357,20 @@ export const OrderEventFragment = graphql(`
 export const OrderLineItemFragment = graphql(`
   fragment OrderLineItemFragment on OrderLineItem {
     __typename
+    ... on AmazonLineItem {
+      ...AmazonLineItemFragment
+    }
+    ... on ShopifyLineItem {
+      ...ShopifyLineItemFragment
+    }
   }
 `);
 export const OrderMetadataFragment = graphql(`
   fragment OrderMetadataFragment on OrderMetadata {
     __typename
+    ... on AmazonOrderMetadata {
+      ...AmazonOrderMetadataFragment
+    }
   }
 `);
 export const OrderPlacedOrderEventFragment = graphql(`
@@ -352,6 +382,9 @@ export const OrderPlacedOrderEventFragment = graphql(`
 export const OrderRequiredActionFragment = graphql(`
   fragment OrderRequiredActionFragment on OrderRequiredAction {
     __typename
+    ... on CompletePaymentChallenge {
+      ...CompletePaymentChallengeFragment
+    }
   }
 `);
 export const OrderSubmissionStartedOrderEventFragment = graphql(`
@@ -481,11 +514,23 @@ export const ReturnDeniedOrderEventFragment = graphql(`
 export const ReturnLineItemFragment = graphql(`
   fragment ReturnLineItemFragment on ReturnLineItem {
     __typename
+    ... on AmazonReturnLineItem {
+      ...AmazonReturnLineItemFragment
+    }
+    ... on ShopifyReturnLineItem {
+      ...ShopifyReturnLineItemFragment
+    }
   }
 `);
 export const ReturnOrderFragment = graphql(`
   fragment ReturnOrderFragment on ReturnOrder {
     __typename
+    ... on ReturnShopify {
+      ...ReturnShopifyFragment
+    }
+    ... on ReturnAmazon {
+      ...ReturnAmazonFragment
+    }
   }
 `);
 export const ReturnOrderErrorFragment = graphql(`
@@ -500,13 +545,19 @@ export const ReturnOrderResponseFragment = graphql(`
       ...ReturnOrderErrorFragment
     }
     result {
-      __typename
+      ...ReturnOrderResultFragment
     }
   }
 `);
 export const ReturnOrderResultFragment = graphql(`
   fragment ReturnOrderResultFragment on ReturnOrderResult {
     __typename
+    ... on ReturnShopifyOrderResult {
+      ...ReturnShopifyOrderResultFragment
+    }
+    ... on ReturnAmazonOrderResult {
+      ...ReturnAmazonOrderResultFragment
+    }
   }
 `);
 export const ReturnRequestAcceptedOrderEventFragment = graphql(`
@@ -658,6 +709,12 @@ export const ShopifyStoreErrorDetailsFragment = graphql(`
 export const StoreFragment = graphql(`
   fragment StoreFragment on Store {
     __typename
+    ... on AmazonStore {
+      ...AmazonStoreFragment
+    }
+    ... on ShopifyStore {
+      ...ShopifyStoreFragment
+    }
   }
 `);
 export const SubmitCartDataFragment = graphql(`
@@ -683,7 +740,7 @@ export const SubmitCartResultErrorFragment = graphql(`
     message
     code
     details {
-      __typename
+      ...CartErrorDetailsFragment
     }
   }
 `);
@@ -873,7 +930,7 @@ export const CartFragment = graphql(`
       ...AttributeFragment
     }
     stores {
-      __typename
+      ...StoreFragment
     }
     buyerIdentity {
       ...BuyerIdentityFragment
@@ -921,10 +978,10 @@ export const ExperimentalAffiliateMerchantFragment = graphql(`
       ...ExperimentalAffiliateCommissionRatePercentageFragment
     }
     minimumCommissionRate {
-      __typename
+      ...ExperimentalAffiliateCommissionRateFragment
     }
     maximumCommissionRate {
-      __typename
+      ...ExperimentalAffiliateCommissionRateFragment
     }
     averageDailySales
     averageOrderValue {
@@ -954,7 +1011,7 @@ export const OrderFragment = graphql(`
     id
     status
     requiredActions {
-      __typename
+      ...OrderRequiredActionFragment
     }
     events {
       ...OrderEventFragment
@@ -963,7 +1020,7 @@ export const OrderFragment = graphql(`
       ...OrderReturnFragment
     }
     lineItems {
-      __typename
+      ...OrderLineItemFragment
     }
     marketplace
     shipments {
@@ -988,7 +1045,7 @@ export const OrderFragment = graphql(`
     }
     createdAt
     metadata {
-      __typename
+      ...OrderMetadataFragment
     }
   }
 `);
@@ -1006,7 +1063,7 @@ export const OrderReturnFragment = graphql(`
     id
     shippingLabelUrl
     lineItems {
-      __typename
+      ...ReturnLineItemFragment
     }
     createdAt
     updatedAt
@@ -1241,7 +1298,7 @@ export const ShopifyVariantFragment = graphql(`
 export const SubmitStoreResultFragment = graphql(`
   fragment SubmitStoreResultFragment on SubmitStoreResult {
     store {
-      __typename
+      ...StoreFragment
     }
     status
     requestId
