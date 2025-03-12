@@ -1,11 +1,10 @@
 import { graphql } from '../graphql';
 
 export const SHOPIFY_APP_QUERY = graphql(`
-  query ShopifyApp($storeCanonicalDomain: String!) {
+  query ShopifyApp {
     shopifyApp {
-      installationLink(storeCanonicalDomain: $storeCanonicalDomain) {
-        url
-      }
+      __typename
+      ...ShopifyAppFragment
     }
   }
 `);

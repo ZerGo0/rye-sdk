@@ -1,15 +1,10 @@
 import { graphql } from '../graphql';
 
 export const CREATE_CART_MUTATION = graphql(`
-  mutation CreateCart(
-    $input: CartCreateInput!
-    $fetchBuyerIdentity: Boolean = false
-    $fetchShippingMethods: Boolean = false
-    $fetchOffer: Boolean = true
-    $fetchCartLines: Boolean = true
-  ) {
+  mutation CreateCart($input: CartCreateInput!) {
     createCart(input: $input) {
-      ...Cart
+      __typename
+      ...CartResponseFragment
     }
   }
 `);

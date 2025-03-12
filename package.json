@@ -19,6 +19,7 @@
     "check-format": "prettier --check .",
     "codegen": "graphql-codegen",
     "format": "prettier --write .",
+    "autogen": "node ./scripts/download-schema.js && node ./scripts/generate-fragments.js && node ./scripts/generate-operations.js && npm run codegen && node ./scripts/generate-ryeclient.js",
     "lint": "eslint ./",
     "lint:fix": "eslint --fix ./",
     "postbuild": "ts-node ./scripts/postbuild.ts",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^4.0.1",
     "@graphql-codegen/client-preset": "^4.0.1",
+    "@graphql-codegen/fragment-matcher": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
