@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { buildSchema, getNamedType } = require('graphql');
+const { camelCase } = require('change-case-all');
 
 // Function to convert field name to operation name
 function fieldToOperationName(fieldName, operationType) {
@@ -24,8 +25,18 @@ function fieldToConstantName(fieldName, operationType) {
 
 // Function to convert field name to file name
 function fieldToFileName(fieldName) {
-  // Keep as camelCase
-  return fieldName;
+  // First convert to camelCase using the library
+  let result = camelCase(fieldName);
+
+  // Generic acronym handling: Find any sequence of uppercase letters and convert to Title case
+  // This regex finds sequences of uppercase letters that:
+  // 1. Are at the end of the string, or
+  // 2. Are followed by a lowercase letter (indicating the start of a new word)
+  return result.replace(/([A-Z]+)([a-z]|$)/g, function (match, acronym, nextChar) {
+    // Convert the acronym to Title case (first letter uppercase, rest lowercase)
+    const titleCaseAcronym = acronym.charAt(0).toUpperCase() + acronym.slice(1).toLowerCase();
+    return titleCaseAcronym + nextChar;
+  });
 }
 
 // Function to get the return type fragment name for a field

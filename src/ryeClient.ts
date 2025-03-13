@@ -5,7 +5,7 @@ import { Client, OperationResult, OperationResultSource } from '@urql/core';
 import { DEFAULT_ENVIRONMENT, ENVIRONMENT, OPERATION } from './constants';
 import { ADD_CART_ITEMS_MUTATION } from './gql/addCartItems';
 import { CANCEL_ORDER_MUTATION } from './gql/cancelOrder';
-import { CHECKOUT_BY_CART_ID_QUERY } from './gql/checkoutByCartID';
+import { CHECKOUT_BY_CART_ID_QUERY } from './gql/checkoutByCartId';
 import { CREATE_CART_MUTATION } from './gql/createCart';
 import { DELETE_CART_ITEMS_MUTATION } from './gql/deleteCartItems';
 import { ENVIRONMENT_TOKEN_QUERY } from './gql/environmentToken';
@@ -13,17 +13,17 @@ import { EXPERIMENTAL_AFFILIATE_COMMISSION_QUERY } from './gql/experimentalAffil
 import { EXPERIMENTAL_AFFILIATE_MERCHANTS_CONNECTION_QUERY } from './gql/experimentalAffiliateMerchantsConnection';
 import { GET_CART_QUERY } from './gql/getCart';
 import { INTEGRATED_SHOPIFY_STORE_QUERY } from './gql/integratedShopifyStore';
-import { ORDER_BY_ID_QUERY } from './gql/orderByID';
-import { PRODUCT_BY_ID_QUERY } from './gql/productByID';
+import { ORDER_BY_ID_QUERY } from './gql/orderById';
+import { PRODUCT_BY_ID_QUERY } from './gql/productById';
 import { PRODUCTS_BY_DOMAIN_V2_QUERY } from './gql/productsByDomainV2';
 import { PRODUCTS_BY_IDS_QUERY } from './gql/productsByIds';
 import { PROPOSE_SHOPIFY_MERCHANT_COMMISSION_MUTATION } from './gql/proposeShopifyMerchantCommission';
 import { REMOVE_CART_MUTATION } from './gql/removeCart';
-import { REQUEST_AMAZON_PRODUCT_BY_URL_MUTATION } from './gql/requestAmazonProductByURL';
-import { REQUEST_PRODUCT_BY_URL_MUTATION } from './gql/requestProductByURL';
-import { REQUEST_SHOPIFY_PRODUCT_BY_URL_MUTATION } from './gql/requestShopifyProductByURL';
-import { REQUEST_STORE_BY_URL_MUTATION } from './gql/requestStoreByURL';
-import { RETURN_BY_ID_QUERY } from './gql/returnByID';
+import { REQUEST_AMAZON_PRODUCT_BY_URL_MUTATION } from './gql/requestAmazonProductByUrl';
+import { REQUEST_PRODUCT_BY_URL_MUTATION } from './gql/requestProductByUrl';
+import { REQUEST_SHOPIFY_PRODUCT_BY_URL_MUTATION } from './gql/requestShopifyProductByUrl';
+import { REQUEST_STORE_BY_URL_MUTATION } from './gql/requestStoreByUrl';
+import { RETURN_BY_ID_QUERY } from './gql/returnById';
 import { RETURN_ORDER_MUTATION } from './gql/returnOrder';
 import { SHOPIFY_APP_QUERY } from './gql/shopifyApp';
 import { SHOPIFY_COLLECTION_QUERY } from './gql/shopifyCollection';
@@ -104,7 +104,7 @@ interface IRyeClient {
     OperationResultSource<OperationResult<CancelOrderMutation, CancelOrderMutationVariables>>
   >;
 
-  checkoutByCartID(
+  checkoutByCartId(
     params: CheckoutByCartIdQueryVariables,
   ): Promise<
     OperationResultSource<OperationResult<CheckoutByCartIdQuery, CheckoutByCartIdQueryVariables>>
@@ -164,11 +164,11 @@ interface IRyeClient {
     >
   >;
 
-  orderByID(
+  orderById(
     params: OrderByIdQueryVariables,
   ): Promise<OperationResultSource<OperationResult<OrderByIdQuery, OrderByIdQueryVariables>>>;
 
-  productByID(
+  productById(
     params: ProductByIdQueryVariables,
   ): Promise<OperationResultSource<OperationResult<ProductByIdQuery, ProductByIdQueryVariables>>>;
 
@@ -203,7 +203,7 @@ interface IRyeClient {
     OperationResultSource<OperationResult<RemoveCartMutation, RemoveCartMutationVariables>>
   >;
 
-  requestAmazonProductByURL(
+  requestAmazonProductByUrl(
     params: RequestAmazonProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -211,7 +211,7 @@ interface IRyeClient {
     >
   >;
 
-  requestProductByURL(
+  requestProductByUrl(
     params: RequestProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -219,7 +219,7 @@ interface IRyeClient {
     >
   >;
 
-  requestShopifyProductByURL(
+  requestShopifyProductByUrl(
     params: RequestShopifyProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -230,7 +230,7 @@ interface IRyeClient {
     >
   >;
 
-  requestStoreByURL(
+  requestStoreByUrl(
     params: RequestStoreByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -238,7 +238,7 @@ interface IRyeClient {
     >
   >;
 
-  returnByID(
+  returnById(
     params: ReturnByIdQueryVariables,
   ): Promise<OperationResultSource<OperationResult<ReturnByIdQuery, ReturnByIdQueryVariables>>>;
 
@@ -364,11 +364,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * checkoutByCartID operation.
-   * @param params - The params for the checkoutByCartID operation.
+   * checkoutByCartId operation.
+   * @param params - The params for the checkoutByCartId operation.
    * @returns A promise that resolves to the operation result.
    */
-  checkoutByCartID = async (
+  checkoutByCartId = async (
     params: CheckoutByCartIdQueryVariables,
   ): Promise<
     OperationResultSource<OperationResult<CheckoutByCartIdQuery, CheckoutByCartIdQueryVariables>>
@@ -484,22 +484,22 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * orderByID operation.
-   * @param params - The params for the orderByID operation.
+   * orderById operation.
+   * @param params - The params for the orderById operation.
    * @returns A promise that resolves to the operation result.
    */
-  orderByID = async (
+  orderById = async (
     params: OrderByIdQueryVariables,
   ): Promise<OperationResultSource<OperationResult<OrderByIdQuery, OrderByIdQueryVariables>>> => {
     return await apiRequest(this.ryeClient, ORDER_BY_ID_QUERY, params);
   };
 
   /**
-   * productByID operation.
-   * @param params - The params for the productByID operation.
+   * productById operation.
+   * @param params - The params for the productById operation.
    * @returns A promise that resolves to the operation result.
    */
-  productByID = async (
+  productById = async (
     params: ProductByIdQueryVariables,
   ): Promise<
     OperationResultSource<OperationResult<ProductByIdQuery, ProductByIdQueryVariables>>
@@ -572,11 +572,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * requestAmazonProductByURL operation.
-   * @param params - The params for the requestAmazonProductByURL operation.
+   * requestAmazonProductByUrl operation.
+   * @param params - The params for the requestAmazonProductByUrl operation.
    * @returns A promise that resolves to the operation result.
    */
-  requestAmazonProductByURL = async (
+  requestAmazonProductByUrl = async (
     params: RequestAmazonProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -592,11 +592,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * requestProductByURL operation.
-   * @param params - The params for the requestProductByURL operation.
+   * requestProductByUrl operation.
+   * @param params - The params for the requestProductByUrl operation.
    * @returns A promise that resolves to the operation result.
    */
-  requestProductByURL = async (
+  requestProductByUrl = async (
     params: RequestProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -612,11 +612,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * requestShopifyProductByURL operation.
-   * @param params - The params for the requestShopifyProductByURL operation.
+   * requestShopifyProductByUrl operation.
+   * @param params - The params for the requestShopifyProductByUrl operation.
    * @returns A promise that resolves to the operation result.
    */
-  requestShopifyProductByURL = async (
+  requestShopifyProductByUrl = async (
     params: RequestShopifyProductByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -635,11 +635,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * requestStoreByURL operation.
-   * @param params - The params for the requestStoreByURL operation.
+   * requestStoreByUrl operation.
+   * @param params - The params for the requestStoreByUrl operation.
    * @returns A promise that resolves to the operation result.
    */
-  requestStoreByURL = async (
+  requestStoreByUrl = async (
     params: RequestStoreByUrlMutationVariables,
   ): Promise<
     OperationResultSource<
@@ -655,11 +655,11 @@ class RyeClient implements IRyeClient {
   };
 
   /**
-   * returnByID operation.
-   * @param params - The params for the returnByID operation.
+   * returnById operation.
+   * @param params - The params for the returnById operation.
    * @returns A promise that resolves to the operation result.
    */
-  returnByID = async (
+  returnById = async (
     params: ReturnByIdQueryVariables,
   ): Promise<OperationResultSource<OperationResult<ReturnByIdQuery, ReturnByIdQueryVariables>>> => {
     return await apiRequest(this.ryeClient, RETURN_BY_ID_QUERY, params);
