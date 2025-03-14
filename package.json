@@ -15,7 +15,7 @@
     "scripts/**"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -r dist && tsc",
     "check-format": "prettier --check .",
     "codegen": "graphql-codegen",
     "format": "prettier --write .",
