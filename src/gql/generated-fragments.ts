@@ -720,8 +720,8 @@ export const AmazonImageFragment = graphql(`
     __typename
     url
     position
-    width_AmazonImage: width
-    height_AmazonImage: height
+    width
+    height
   }
 `);
 export const AmazonLineItemFragment = graphql(`
@@ -1110,8 +1110,6 @@ export const ShopifyImageFragment = graphql(`
   fragment ShopifyImageFragment on ShopifyImage {
     __typename
     url
-    width_ShopifyImage: width
-    height_ShopifyImage: height
     id
     variantIDs
     createdAt
