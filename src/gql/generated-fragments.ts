@@ -575,6 +575,12 @@ export const ShopifyCollectionsConnectionFragment = graphql(`
     }
   }
 `);
+export const ShopifyImageFragment = graphql(`
+  fragment ShopifyImageFragment on ShopifyImage {
+    __typename
+    url
+  }
+`);
 export const ShopifyLineItemFragment = graphql(`
   fragment ShopifyLineItemFragment on ShopifyLineItem {
     __typename
@@ -1104,16 +1110,6 @@ export const ShopifyCollectionFragment = graphql(`
     productsConnection {
       ...ShopifyProductsConnectionFragment
     }
-  }
-`);
-export const ShopifyImageFragment = graphql(`
-  fragment ShopifyImageFragment on ShopifyImage {
-    __typename
-    url
-    id
-    variantIDs
-    createdAt
-    updatedAt
   }
 `);
 export const ShopifyOfferFragment = graphql(`
