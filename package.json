@@ -1,6 +1,6 @@
 {
   "name": "@zergo0/rye-sdk",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "SDK for the Rye API",
   "repository": {
     "type": "git",
