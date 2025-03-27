@@ -92,11 +92,16 @@ function findNestedRequiredArgs(field, schema, visitedTypes = new Set(), depth =
           );
 
           if (fieldRequiredArgs.length > 0) {
-            requiredArgs.push({
-              fieldName,
-              parentType: returnType.name,
-              args: fieldRequiredArgs,
-            });
+            // Filter out the 'key' argument - it's not actually needed in the schema
+            const filteredArgs = fieldRequiredArgs.filter((arg) => arg.name !== 'key');
+
+            if (filteredArgs.length > 0) {
+              requiredArgs.push({
+                fieldName,
+                parentType: returnType.name,
+                args: filteredArgs,
+              });
+            }
           }
         }
 
@@ -143,7 +148,8 @@ function generateOperationFile(fieldName, field, operationType, schema) {
   // Note: If there are name conflicts, we could generate unique names
   nestedRequiredArgs.forEach(({ args }) => {
     args.forEach((arg) => {
-      if (!allArgs.has(arg.name)) {
+      // Skip the 'key' argument - it's not needed
+      if (arg.name !== 'key' && !allArgs.has(arg.name)) {
         allArgs.set(arg.name, arg);
       }
     });
@@ -179,7 +185,10 @@ function generateOperationFile(fieldName, field, operationType, schema) {
     // Get important nested fields that need arguments
     const importantNestedFields = nestedRequiredArgs.filter((item) => {
       // Check if any args are both required and don't have default values
-      return item.args.some((arg) => arg.type.toString().includes('!') && !arg.defaultValue);
+      // Skip fields with the 'key' argument
+      return item.args.some(
+        (arg) => arg.name !== 'key' && arg.type.toString().includes('!') && !arg.defaultValue,
+      );
     });
 
     if (importantNestedFields.length > 0) {
@@ -187,7 +196,9 @@ function generateOperationFile(fieldName, field, operationType, schema) {
       importantNestedFields.forEach((nestedField) => {
         try {
           const argsString = nestedField.args
-            .filter((arg) => arg.type.toString().includes('!') && !arg.defaultValue)
+            .filter(
+              (arg) => arg.name !== 'key' && arg.type.toString().includes('!') && !arg.defaultValue,
+            )
             .map((arg) => `${arg.name}: $${arg.name}`)
             .join(', ');
 
