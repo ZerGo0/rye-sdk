@@ -533,7 +533,11 @@ export const ReturnShopifyOrderResultFragment = graphql(`
 export const ShopifyAppFragment = graphql(`
   fragment ShopifyAppFragment on ShopifyApp {
     __typename
-    __typename
+    ... on ShopifyApp {
+      installationLink(storeCanonicalDomain: "REQUIRED_ARG") {
+        ...ShopifyAppInstallationLinkFragment
+      }
+    }
   }
 `);
 export const ShopifyAppInstallationLinkFragment = graphql(`
@@ -1291,6 +1295,19 @@ export const ImageFragment = graphql(`
     }
     ... on ShopifyImage {
       ...ShopifyImageFragment
+    }
+  }
+`);
+export const OfferErrorFragment = graphql(`
+  fragment OfferErrorFragment on OfferError {
+    __typename
+    code
+    message
+    ... on AmazonOfferError {
+      ...AmazonOfferErrorFragment
+    }
+    ... on ShopifyOfferError {
+      ...ShopifyOfferErrorFragment
     }
   }
 `);

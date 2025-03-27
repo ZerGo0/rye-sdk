@@ -26,10 +26,13 @@ const interfaceFieldTypes = new Map();
 
 // Function to generate a fragment for a type
 function generateFragment(typeName, fields) {
+  // If fields already includes __typename (which happens when we have a type with only required args),
+  // don't include it again to prevent duplication
+  const alreadyHasTypename = fields.some((field) => field === '__typename');
+
   return `export const ${typeName}Fragment = graphql(\`
   fragment ${typeName}Fragment on ${typeName} {
-    __typename
-${fields.map((field) => `    ${field}`).join('\n')}
+${alreadyHasTypename ? '' : '    __typename\n'}${fields.map((field) => `    ${field}`).join('\n')}
   }
 \`);
 `;
@@ -216,6 +219,54 @@ function analyzeFieldCompatibility(interfaceType, implementingTypes, schema) {
   }
 
   return { safeFields, conflictingFields };
+}
+
+// Helper function to handle types with only required arguments
+function handleTypeWithRequiredArgs(type, schema) {
+  // For types that have only fields with required arguments, we still want to include
+  // __typename and check if any return types of their fields have fragments
+  const fieldsWithFragments = [];
+  fieldsWithFragments.push('__typename');
+
+  // Add references to return types that have fragments
+  const typeFields = type.getFields ? type.getFields() : {};
+  for (const fieldName in typeFields) {
+    const field = typeFields[fieldName];
+    const namedType = getNamedType(field.type);
+
+    // Skip if not an object/interface/union type or doesn't have a fragment
+    if (!isObjectType(namedType) && !isInterfaceType(namedType) && !isUnionType(namedType)) {
+      continue;
+    }
+
+    if (fragmentTypes.has(namedType.name)) {
+      // For fields with required arguments, we need to provide default values
+      // when spreading the fragment
+      const requiredArgsList = field.args
+        .filter((arg) => arg.type.toString().includes('!') && !arg.defaultValue)
+        .map((arg) => {
+          // Provide appropriate default value based on type
+          let defaultValue = '"REQUIRED_ARG"';
+          if (arg.type.toString().includes('Int')) {
+            defaultValue = '0';
+          } else if (arg.type.toString().includes('Float')) {
+            defaultValue = '0.0';
+          } else if (arg.type.toString().includes('Boolean')) {
+            defaultValue = 'false';
+          }
+          return `${arg.name}: ${defaultValue}`;
+        })
+        .join(', ');
+
+      fieldsWithFragments.push(`... on ${type.name} {
+  ${fieldName}(${requiredArgsList}) {
+    ...${namedType.name}Fragment
+  }
+}`);
+    }
+  }
+
+  return fieldsWithFragments;
 }
 
 async function main() {
@@ -452,7 +503,8 @@ async function main() {
 
       // Skip if no fields (all had required arguments)
       if (fields.length === 0) {
-        fragmentsContent += generateFragment(typeName, ['__typename']);
+        const fieldsWithFragments = handleTypeWithRequiredArgs(type, schema);
+        fragmentsContent += generateFragment(typeName, fieldsWithFragments);
       } else {
         // Generate the fragment
         fragmentsContent += generateFragment(typeName, fields);
@@ -470,7 +522,8 @@ async function main() {
 
       // Skip if no fields (all had required arguments)
       if (fields.length === 0) {
-        fragmentsContent += generateFragment(typeName, ['__typename']);
+        const fieldsWithFragments = handleTypeWithRequiredArgs(type, schema);
+        fragmentsContent += generateFragment(typeName, fieldsWithFragments);
       } else {
         // Generate the fragment
         fragmentsContent += generateFragment(typeName, fields);
