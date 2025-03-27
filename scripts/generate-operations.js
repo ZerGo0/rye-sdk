@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { buildSchema, getNamedType } = require('graphql');
+const { buildSchema, getNamedType, isObjectType } = require('graphql');
 const { camelCase } = require('change-case-all');
 
 // Function to convert field name to operation name
@@ -45,17 +45,117 @@ function getReturnTypeFragmentName(field) {
   return returnType.name + 'Fragment';
 }
 
-// Function to generate a placeholder value for a type
+// Function to find required arguments in nested fields
+function findNestedRequiredArgs(field, schema, visitedTypes = new Set(), depth = 0) {
+  if (!field) return [];
+
+  const requiredArgs = [];
+  try {
+    const returnType = getNamedType(field.type);
+
+    // Avoid circular references
+    if (visitedTypes.has(returnType.name)) {
+      return requiredArgs;
+    }
+
+    visitedTypes.add(returnType.name);
+
+    // Only process object types
+    if (!isObjectType(returnType)) {
+      return requiredArgs;
+    }
+
+    // Get fields of the return type
+    let fields;
+    try {
+      fields = returnType.getFields();
+    } catch (err) {
+      console.warn(`Warning: Could not get fields for type ${returnType.name} - ${err.message}`);
+      return requiredArgs;
+    }
+
+    // Limit recursion depth to avoid potential issues
+    const maxDepth = 3;
+    if (depth >= maxDepth) {
+      return requiredArgs;
+    }
+
+    // Check each field for required arguments
+    for (const fieldName in fields) {
+      try {
+        const nestedField = fields[fieldName];
+
+        // Check if this field has required arguments
+        if (nestedField.args && nestedField.args.length > 0) {
+          const fieldRequiredArgs = nestedField.args.filter(
+            (arg) => arg.type && arg.type.toString().includes('!') && !arg.defaultValue,
+          );
+
+          if (fieldRequiredArgs.length > 0) {
+            requiredArgs.push({
+              fieldName,
+              parentType: returnType.name,
+              args: fieldRequiredArgs,
+            });
+          }
+        }
+
+        // Recursively check nested fields
+        if (nestedField && nestedField.type && isObjectType(getNamedType(nestedField.type))) {
+          const deeperArgs = findNestedRequiredArgs(
+            nestedField,
+            schema,
+            new Set(visitedTypes),
+            depth + 1,
+          );
+          if (deeperArgs.length > 0) {
+            requiredArgs.push(...deeperArgs);
+          }
+        }
+      } catch (err) {
+        console.warn(`Warning: Could not process field ${fieldName} - ${err.message}`);
+      }
+    }
+  } catch (err) {
+    console.warn(`Warning: Error in findNestedRequiredArgs - ${err.message}`);
+  }
+
+  return requiredArgs;
+}
 
 // Function to generate an operation file for a field
-function generateOperationFile(fieldName, field, operationType) {
+function generateOperationFile(fieldName, field, operationType, schema) {
   const operationName = fieldToOperationName(fieldName, operationType);
   const constantName = fieldToConstantName(fieldName, operationType);
 
+  // Find any nested fields with required arguments
+  const nestedRequiredArgs = findNestedRequiredArgs(field, schema);
+
+  // Create a map to deduplicate arguments by name
+  const allArgs = new Map();
+
+  // Add top-level arguments
+  field.args.forEach((arg) => {
+    allArgs.set(arg.name, arg);
+  });
+
+  // Add nested required arguments with unique names
+  // Note: If there are name conflicts, we could generate unique names
+  nestedRequiredArgs.forEach(({ args }) => {
+    args.forEach((arg) => {
+      if (!allArgs.has(arg.name)) {
+        allArgs.set(arg.name, arg);
+      }
+    });
+  });
+
+  // Convert the arguments map to array
+  const combinedArgs = Array.from(allArgs.values());
+
   // Generate parameters for the operation
   const params =
-    field.args.length > 0
-      ? `(${field.args.map((arg) => `$${arg.name}: ${arg.type.toString()}`).join(', ')})`
+    combinedArgs.length > 0
+      ? `(${combinedArgs.map((arg) => `$${arg.name}: ${arg.type.toString()}`).join(', ')})`
       : '';
 
   // Generate arguments for the field
@@ -67,14 +167,66 @@ function generateOperationFile(fieldName, field, operationType) {
   // Get the return type
   const returnTypeFragment = getReturnTypeFragmentName(field);
 
+  // Generate the selection set, including passing arguments to nested fields
+  let selectionSet = `      __typename
+      ...${returnTypeFragment}`;
+
+  // For cases where we need to include nested fields with required arguments
+  if (nestedRequiredArgs.length > 0) {
+    // Build a dynamic selection set that includes required nested fields
+    selectionSet = `      __typename`;
+
+    // Get important nested fields that need arguments
+    const importantNestedFields = nestedRequiredArgs.filter((item) => {
+      // Check if any args are both required and don't have default values
+      return item.args.some((arg) => arg.type.toString().includes('!') && !arg.defaultValue);
+    });
+
+    if (importantNestedFields.length > 0) {
+      // Build an explicit selection for each field with required args
+      importantNestedFields.forEach((nestedField) => {
+        try {
+          const argsString = nestedField.args
+            .filter((arg) => arg.type.toString().includes('!') && !arg.defaultValue)
+            .map((arg) => `${arg.name}: $${arg.name}`)
+            .join(', ');
+
+          // Get the return type for this nested field and its fragment
+          // Make sure the field exists before accessing it
+          const typeFields = getNamedType(field.type).getFields();
+          if (typeFields && typeFields[nestedField.fieldName]) {
+            const returnType = getNamedType(typeFields[nestedField.fieldName].type);
+            if (returnType) {
+              const nestedFragmentName = returnType.name + 'Fragment';
+
+              selectionSet += `
+      ${nestedField.fieldName}(${argsString}) {
+        ...${nestedFragmentName}
+      }`;
+            }
+          }
+        } catch (err) {
+          console.warn(
+            `Warning: Could not process nested field ${nestedField.fieldName} - ${err.message}`,
+          );
+        }
+      });
+    }
+
+    // If we didn't add any nested field selections, fall back to the return type fragment
+    if (selectionSet.trim() === '__typename') {
+      selectionSet += `
+      ...${returnTypeFragment}`;
+    }
+  }
+
   // Generate the operation content
   const operationContent = `import { graphql } from '../graphql';
 
 export const ${constantName} = graphql(\`
   ${operationType} ${operationName}${params} {
     ${fieldName}${args} {
-      __typename
-      ...${returnTypeFragment}
+${selectionSet}
     }
   }
 \`);
@@ -111,7 +263,7 @@ async function main() {
       const queryFields = queryType.getFields();
       for (const fieldName in queryFields) {
         const field = queryFields[fieldName];
-        const { fileName, content } = generateOperationFile(fieldName, field, 'query');
+        const { fileName, content } = generateOperationFile(fieldName, field, 'query', schema);
 
         const filePath = path.join(outputDir, `${fileName}.ts`);
         fs.writeFileSync(filePath, content);
@@ -124,7 +276,7 @@ async function main() {
       const mutationFields = mutationType.getFields();
       for (const fieldName in mutationFields) {
         const field = mutationFields[fieldName];
-        const { fileName, content } = generateOperationFile(fieldName, field, 'mutation');
+        const { fileName, content } = generateOperationFile(fieldName, field, 'mutation', schema);
 
         const filePath = path.join(outputDir, `${fileName}.ts`);
         fs.writeFileSync(filePath, content);

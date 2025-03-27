@@ -1,7 +1,7 @@
 import { graphql } from '../graphql';
 
 export const GET_CART_QUERY = graphql(`
-  query GetCart($id: ID!) {
+  query GetCart($id: ID!, $key: String!) {
     getCart(id: $id) {
       __typename
       ...CartResponseFragment

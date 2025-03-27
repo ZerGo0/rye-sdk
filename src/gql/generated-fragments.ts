@@ -534,10 +534,10 @@ export const ShopifyAppFragment = graphql(`
   fragment ShopifyAppFragment on ShopifyApp {
     __typename
     ... on ShopifyApp {
-      installationLink(storeCanonicalDomain: "REQUIRED_ARG") {
-        ...ShopifyAppInstallationLinkFragment
-      }
-    }
+  installationLink(storeCanonicalDomain: "REQUIRED_ARG") {
+    ...ShopifyAppInstallationLinkFragment
+  }
+}
   }
 `);
 export const ShopifyAppInstallationLinkFragment = graphql(`
@@ -577,12 +577,6 @@ export const ShopifyCollectionsConnectionFragment = graphql(`
     pageInfo {
       ...PageInfoFragment
     }
-  }
-`);
-export const ShopifyImageFragment = graphql(`
-  fragment ShopifyImageFragment on ShopifyImage {
-    __typename
-    url
   }
 `);
 export const ShopifyLineItemFragment = graphql(`
@@ -729,9 +723,9 @@ export const AmazonImageFragment = graphql(`
   fragment AmazonImageFragment on AmazonImage {
     __typename
     url
-    position
-    width
-    height
+    position_AmazonImage: position
+    width_AmazonImage: width
+    height_AmazonImage: height
   }
 `);
 export const AmazonLineItemFragment = graphql(`
@@ -1114,6 +1108,19 @@ export const ShopifyCollectionFragment = graphql(`
     productsConnection {
       ...ShopifyProductsConnectionFragment
     }
+  }
+`);
+export const ShopifyImageFragment = graphql(`
+  fragment ShopifyImageFragment on ShopifyImage {
+    __typename
+    url
+    position_ShopifyImage: position
+    width_ShopifyImage: width
+    height_ShopifyImage: height
+    id
+    variantIDs
+    createdAt
+    updatedAt
   }
 `);
 export const ShopifyOfferFragment = graphql(`
